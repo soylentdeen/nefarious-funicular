@@ -1,0 +1,9 @@
+# Test.cfg
+watched_dir = ./Output/
+observed = ./Observed/TWHydra_IGRINS.fits
+wlStart = 22200
+wlStop = 22300
+wlOffset = 40.0
+continuum = 0.97
+veiling = 0.1
+resolving_power = 40000.0

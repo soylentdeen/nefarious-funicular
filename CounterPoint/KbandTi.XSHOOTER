@@ -1,0 +1,9 @@
+# Test.cfg
+watched_dir = ./Output/
+observed = ./Observed/TWHydra_XSHOOTER.fits
+wlStart = 22200
+wlStop = 22300
+wlOffset = -0.4
+continuum = 0.98
+veiling = 0.1
+resolving_power = 9000.0
