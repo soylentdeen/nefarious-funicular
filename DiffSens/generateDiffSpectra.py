@@ -137,8 +137,8 @@ ax.set_xlabel("Wavelength")
 ax.set_ylabel("Partial Derivative")
 ax.set_title("Differential Sensitivities")
 
-#generateConfigFiles(baseconfig, deltaconfig)
-#synthesizeSpectra()
+generateConfigFiles(baseconfig, deltaconfig)
+synthesizeSpectra()
 generateDifferentials(config, ax)
 
 fig.show()

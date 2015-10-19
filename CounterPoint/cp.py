@@ -31,7 +31,7 @@ fig.show()
 
 choice = ''
 while choice != 'q':
-    if choice == 's':
+    if choice == 'e':
         Orchestra.selectPlayers()
     elif choice == 'w':
         wlOffset += float(raw_input("Enter Wavelength Offset : "))
@@ -39,6 +39,9 @@ while choice != 'q':
         continuum *= float(raw_input("Enter multiplicative continuum factor : "))
     elif choice == 'v':
         veiling = float(raw_input("Enter new Veiling :"))
+    elif choice == 's':
+        outfile = raw_input("Enter the name of the file you wish to save")
+        fig.savefig(outfile)
     Ensemble = Orchestra.getEnsemble()
     ax1.clear()
     ax2.clear()
@@ -64,9 +67,10 @@ while choice != 'q':
 
     ax1.legend(loc=3)
     fig.show()
-    print("(s)elect plotted spectra")
+    print("s(e)lect plotted spectra")
     print("(w)avelength offset")
     print("(c)ontinuum")
     print("(v)eiling")
+    print("(s)ave spectrum")
     print("(q)uit")
     choice = raw_input("Enter choice: ")
