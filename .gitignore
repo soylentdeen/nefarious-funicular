@@ -5,6 +5,10 @@ __pycache__/
 # C extensions
 *.so
 
+*.fits
+*.par
+MoogSandbox
+
 # Distribution / packaging
 .Python
 env/
