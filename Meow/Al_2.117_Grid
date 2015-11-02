@@ -1,0 +1,4 @@
+# Test.cfg
+watched_dir = ../GridMaker/Output/
+wlStart = 21140
+wlStop = 21180
