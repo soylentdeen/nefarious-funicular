@@ -8,10 +8,11 @@ vsini = 5.8
 delta_B = 1.0
 delta_T = 200
 delta_logg = 0.5
-delta_resolution = 45000.0
 
-wlStart = 22000
-wlStop = 22350
+resolving_power = 45000.0
+
+wlStart = 22050
+wlStop = 22080
 
 Strong_FileName = ./MoogSandbox/strong.lines
 Weak_FileName = ./MoogSandbox/weak.lines

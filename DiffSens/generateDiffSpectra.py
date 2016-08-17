@@ -1,8 +1,8 @@
 import MoogTools
 import AstroUtils
+import Moog960
 import sys
 import os
-import pyfits
 import SpectralTools
 import matplotlib.pyplot as pyplot
 import numpy
@@ -59,7 +59,7 @@ def generateConfigFiles(baseconfig, deltaconfig):
     minus_B["Bfield"] -= deltaconfig["delta_B"]
     AstroUtils.write_config('minus_B.cfg', minus_B)
 
-def generateDifferentials(config, ax):
+def generateDifferentials(config, deriv_ax, fiducial_ax):
     base_filename = config["outbase"]
     base_dir = config["outdir"]
 
@@ -72,49 +72,63 @@ def generateDifferentials(config, ax):
     dB = config["delta_B"]
 
 
-    fiducial_fn = base_dir+base_filename+'_fiducial_T%d_G%.2f_B%.2f_V%.1f.fits' % (T, G, B, V)
-    plus_T_fn = base_dir+base_filename+'_plusT_T%d_G%.2f_B%.2f_V%.1f.fits' % (T+dT, G, B, V)
-    minus_T_fn = base_dir+base_filename+'_minusT_T%d_G%.2f_B%.2f_V%.1f.fits' % (T-dT, G, B, V)
-    plus_G_fn = base_dir+base_filename+'_plusG_T%d_G%.2f_B%.2f_V%.1f.fits' % (T, G+dG, B, V)
-    minus_G_fn = base_dir+base_filename+'_minusG_T%d_G%.2f_B%.2f_V%.1f.fits' % (T, G-dG, B, V)
-    plus_B_fn = base_dir+base_filename+'_plusB_T%d_G%.2f_B%.2f_V%.1f.fits' % (T, G, B+dB, V)
-    minus_B_fn = base_dir+base_filename+'_minusB_T%d_G%.2f_B%.2f_V%.1f.fits' % (T, G, B-dB, V)
+    fiducial_fn = base_dir+base_filename+'_fiducial_T%d_G%.2f_B%.2f_raw.fits' % (T, G, B)
+    plus_T_fn = base_dir+base_filename+'_plusT_T%d_G%.2f_B%.2f_raw.fits' % (T+dT, G, B)
+    minus_T_fn = base_dir+base_filename+'_minusT_T%d_G%.2f_B%.2f_raw.fits' % (T-dT, G, B)
+    plus_G_fn = base_dir+base_filename+'_plusG_T%d_G%.2f_B%.2f_raw.fits' % (T, G+dG, B)
+    minus_G_fn = base_dir+base_filename+'_minusG_T%d_G%.2f_B%.2f_raw.fits' % (T, G-dG, B)
+    plus_B_fn = base_dir+base_filename+'_plusB_T%d_G%.2f_B%.2f_raw.fits' % (T, G, B+dB)
+    minus_B_fn = base_dir+base_filename+'_minusB_T%d_G%.2f_B%.2f_raw.fits' % (T, G, B-dB)
 
-    fiducial = pyfits.getdata(fiducial_fn)
-    plus_T = pyfits.getdata(plus_T_fn)
-    minus_T = pyfits.getdata(minus_T_fn)
-    plus_G = pyfits.getdata(minus_T_fn)
-    minus_G = pyfits.getdata(minus_G_fn)
-    plus_B = pyfits.getdata(plus_B_fn)
-    minus_B = pyfits.getdata(minus_B_fn)
+    fiducial = Moog960.SyntheticMelody(filename=fiducial_fn)
+    plus_T = Moog960.SyntheticMelody(filename=plus_T_fn)
+    minus_T = Moog960.SyntheticMelody(filename=minus_T_fn)
+    plus_G = Moog960.SyntheticMelody(filename=minus_T_fn)
+    minus_G = Moog960.SyntheticMelody(filename=minus_G_fn)
+    plus_B = Moog960.SyntheticMelody(filename=plus_B_fn)
+    minus_B = Moog960.SyntheticMelody(filename=minus_B_fn)
 
-    #Do the convolution with the resolution
-    wavelength, fiducial_flux = SpectralTools.resample(fiducial[0], fiducial[1], config["delta_resolution"])
-    plus_T_wave, plus_T_flux = SpectralTools.resample(plus_T[0], plus_T[1], config["delta_resolution"])
-    minus_T_wave, minus_T_flux = SpectralTools.resample(minus_T[0], minus_T[1], config["delta_resolution"])
-    plus_G_wave, plus_G_flux = SpectralTools.resample(plus_G[0], plus_G[1], config["delta_resolution"])
-    minus_G_wave, minus_G_flux = SpectralTools.resample(minus_G[0], minus_G[1], config["delta_resolution"])
-    plus_B_wave, plus_B_flux = SpectralTools.resample(plus_B[0], plus_B[1], config["delta_resolution"])
-    minus_B_wave, minus_B_flux = SpectralTools.resample(minus_B[0], minus_B[1], config["delta_resolution"])
-   
-    # Do the re-binning to the fiducial wavelength
-    plus_T_flux = SpectralTools.interpolate_spectrum(plus_T_wave, wavelength, plus_T_flux, pad=1.0)
-    minus_T_flux = SpectralTools.interpolate_spectrum(minus_T_wave, wavelength, minus_T_flux, pad = 1.0)
-    plus_G_flux = SpectralTools.interpolate_spectrum(plus_G_wave, wavelength, plus_G_flux, pad = 1.0)
-    minus_G_flux = SpectralTools.interpolate_spectrum(minus_G_wave, wavelength, minus_G_flux, pad = 1.0)
-    plus_B_flux = SpectralTools.interpolate_spectrum(plus_B_wave, wavelength, plus_B_flux, pad = 1.0)
-    minus_B_flux = SpectralTools.interpolate_spectrum(minus_B_wave, wavelength, minus_B_flux, pad = 1.0)
+    fiducial.selectPhrases(selectAll=True)
+    fiducial_Labels = fiducial.rehearse(vsini=V, R=config["resolving_power"], returnLabels=True)
+    fiducial_Spectrum, blah = fiducial.perform(label=fiducial_Labels[0])
+    
+    plus_T.selectPhrases(selectAll=True)
+    plus_T_Labels = plus_T.rehearse(vsini=V, R=config["resolving_power"], observedWl=fiducial_Spectrum.wl, returnLabels=True)
+    plus_T_Spectrum, blah = plus_T.perform(label=plus_T_Labels[0])
+
+    minus_T.selectPhrases(selectAll=True)
+    minus_T_Labels = minus_T.rehearse(vsini=V, R=config["resolving_power"], observedWl=fiducial_Spectrum.wl, returnLabels=True)
+    minus_T_Spectrum, blah = minus_T.perform(label=minus_T_Labels[0])
+
+    plus_G.selectPhrases(selectAll=True)
+    plus_G_Labels = plus_G.rehearse(vsini=V, R=config["resolving_power"], observedWl=fiducial_Spectrum.wl, returnLabels=True)
+    plus_G_Spectrum, blah = plus_G.perform(label=plus_G_Labels[0])
+
+    minus_G.selectPhrases(selectAll=True)
+    minus_G_Labels = minus_G.rehearse(vsini=V, R=config["resolving_power"], observedWl=fiducial_Spectrum.wl, returnLabels=True)
+    minus_G_Spectrum, blah = minus_G.perform(label=minus_G_Labels[0])
+
+    plus_B.selectPhrases(selectAll=True)
+    plus_B_Labels = plus_B.rehearse(vsini=V, R=config["resolving_power"], observedWl=fiducial_Spectrum.wl, returnLabels=True)
+    plus_B_Spectrum, blah = plus_B.perform(label=plus_B_Labels[0])
+
+    minus_B.selectPhrases(selectAll=True)
+    minus_B_Labels = minus_B.rehearse(vsini=V, R=config["resolving_power"], observedWl=fiducial_Spectrum.wl, returnLabels=True)
+    minus_B_Spectrum, blah = minus_B.perform(label=minus_B_Labels[0])
+
 
     # Finally compute the differential
-    deltaT = (plus_T_flux - minus_T_flux)/2.0
-    deltaG = (plus_G_flux - minus_G_flux)/2.0
-    deltaB = (plus_B_flux - minus_B_flux)/2.0
+    deltaT = (plus_T_Spectrum - minus_T_Spectrum)/2.0
+    deltaG = (plus_G_Spectrum - minus_G_Spectrum)/2.0
+    deltaB = (plus_B_Spectrum - minus_B_Spectrum)/2.0
 
-    Temp = ax.plot(wavelength, deltaT, lw = 2.0, color = 'r', label=r'$\Delta$ Teff = %d K' % dT)
-    Grav = ax.plot(wavelength, deltaG, lw = 2.0, color = 'g', label=r'$\Delta$ log g = %.1f dex' % dG)
-    Bfield = ax.plot(wavelength, deltaB, lw = 2.0, color = 'b', label=r'$\Delta$ B = %.1f kG' % dB)
+    deltaT.plot(ax=deriv_ax, lw=2.0, color = 'r', label=r'$\Delta$ Teff = %d K' % dT)
+    deltaG.plot(ax=deriv_ax, lw=2.0, color = 'g', label=r'$\Delta$ log g = %.1f dex' % dG)
+    deltaB.plot(ax=deriv_ax, lw=2.0, color = 'b', label=r'$\Delta$ B = %.1f kG' % dB)
+    fiducial_Spectrum.plot(ax=fiducial_ax, lw=2.0, color = 'k', label=r'Teff = %d, log g = %.1f, B = %.1f kG' % (T, G, B))
 
-    ax.legend(frameon=False)
+    deriv_ax.legend(frameon=False)
+    fiducial_ax.legend(frameon=False)
 
 diffspecConfigFile = sys.argv[1]
 config = AstroUtils.parse_config(diffspecConfigFile)
@@ -132,14 +146,19 @@ pyplot.rc("axes", labelsize='large')
 pyplot.rc("xtick.major", size=3.0)
 fig = pyplot.figure(0, figsize=(12,9))
 fig.clear()
-ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-ax.set_xlabel("Wavelength")
-ax.set_ylabel("Partial Derivative")
-ax.set_title("Differential Sensitivities")
+deriv_ax = fig.add_axes([0.1, 0.1, 0.8, 0.4])
+deriv_ax.set_xlabel("Wavelength")
+deriv_ax.set_ylabel("Partial Derivative")
+deriv_ax.set_title("Differential Sensitivities")
+
+fiducial_ax = fig.add_axes([0.1, 0.5, 0.8, 0.4])
+fiducial_ax.set_xlabel("")
+fiducial_ax.set_ylabel("Fiducial Flux")
+
 
 generateConfigFiles(baseconfig, deltaconfig)
 synthesizeSpectra()
-generateDifferentials(config, ax)
+generateDifferentials(config, deriv_ax, fiducial_ax)
 
 fig.show()
-fig.savefig(config["outbase"]+'_R%d_differentials.png' % config["delta_resolution"])
+fig.savefig(config["outbase"]+'_R%d_differentials.png' % config["resolving_power"])
