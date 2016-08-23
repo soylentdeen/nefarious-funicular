@@ -71,6 +71,8 @@ def generateDifferentials(config, deriv_ax, fiducial_ax):
     dG = config["delta_logg"]
     dB = config["delta_B"]
 
+    
+    differentials = Moog960.Score(directory=base_dir+base_filename)
 
     fiducial_fn = base_dir+base_filename+'_fiducial_T%d_G%.2f_B%.2f_raw.fits' % (T, G, B)
     plus_T_fn = base_dir+base_filename+'_plusT_T%d_G%.2f_B%.2f_raw.fits' % (T+dT, G, B)

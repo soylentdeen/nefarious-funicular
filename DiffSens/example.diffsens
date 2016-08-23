@@ -12,7 +12,7 @@ delta_logg = 0.5
 resolving_power = 45000.0
 
 wlStart = 22050
-wlStop = 22080
+wlStop = 22060
 
 Strong_FileName = ./MoogSandbox/strong.lines
 Weak_FileName = ./MoogSandbox/weak.lines
@@ -22,8 +22,7 @@ deltav = 0.01
 # Atomic and Molecular line files for generating Moog line lists
 strong_file = AbsorptionLines/VALD/lines.strong
 VALD_file = AbsorptionLines/VALD/Kband/Kband
-molecules = AbsorptionLines/Molecular/
-gf_file = AbsorptionLines/corrections/compositeCorrected.dat
+gf_file = AbsorptionLines/corrections/corrected_byMachine.dat
 doMolecules = False
 applyCorrections = True
 
